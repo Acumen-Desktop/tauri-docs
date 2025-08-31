@@ -1,0 +1,41 @@
+{
+  "hooks": [
+    {
+      "description": "Validate Tauri JS/TS code before writing",
+      "event": "PreToolUse",
+      "toolMatch": ["Write", "Edit", "MultiEdit"],
+      "pathMatch": "**/*.{js,ts,tsx,jsx}",
+      "condition": "content contains 'window.__TAURI__'",
+      "command": "echo 'Validating Tauri JS code...' && claude-code agent tauri-js-validator --input '{content}' --prompt 'Validate this Tauri JavaScript/TypeScript code for correctness according to the cheat sheets'"
+    },
+    {
+      "description": "Validate Tauri Rust code before writing",
+      "event": "PreToolUse",
+      "toolMatch": ["Write", "Edit", "MultiEdit"],
+      "pathMatch": "**/src-tauri/**/*.rs",
+      "condition": "content contains 'tauri::'",
+      "command": "echo 'Validating Tauri Rust code...' && claude-code agent tauri-rust-validator --input '{content}' --prompt 'Validate this Tauri Rust code for correctness according to the cheat sheet'"
+    },
+    {
+      "description": "Check for cheat sheet updates after Rust compilation errors",
+      "event": "PostToolUse",
+      "toolMatch": ["Bash"],
+      "condition": "command contains 'cargo' AND exitCode != 0 AND stderr contains 'error'",
+      "command": "echo 'Analyzing Rust compilation error for documentation gaps...' && claude-code agent cheatsheet-updater --prompt 'Rust compilation error occurred. Command: {command}. Error: {stderr}. Check if cheat sheets need updating to prevent this error.'"
+    },
+    {
+      "description": "Check for cheat sheet updates after Tauri dev/build errors",
+      "event": "PostToolUse",
+      "toolMatch": ["Bash"],
+      "condition": "command contains 'tauri dev' OR command contains 'tauri build' AND exitCode != 0",
+      "command": "echo 'Analyzing Tauri error for documentation gaps...' && claude-code agent cheatsheet-updater --prompt 'Tauri error occurred. Command: {command}. Error: {stderr}. Check if cheat sheets need updating to prevent this error.'"
+    },
+    {
+      "description": "Check for cheat sheet updates after npm/yarn errors in Tauri projects",
+      "event": "PostToolUse", 
+      "toolMatch": ["Bash"],
+      "condition": "(command contains 'npm' OR command contains 'yarn') AND exitCode != 0 AND stderr contains 'tauri'",
+      "command": "echo 'Analyzing npm/yarn Tauri error for documentation gaps...' && claude-code agent cheatsheet-updater --prompt 'Frontend build error in Tauri project. Command: {command}. Error: {stderr}. Check if cheat sheets need updating.'"
+    }
+  ]
+}

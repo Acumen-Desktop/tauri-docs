@@ -2,6 +2,8 @@
 
 **Note:** This cheat sheet is designed for use without a build step. All APIs are accessed through the `window.__TAURI__` object.
 
+**⚠️ Plugins require permissions in `tauri.conf.json` capabilities array**
+
 ## Cross-Platform APIs
 
 ### Clipboard
@@ -25,6 +27,8 @@
 | `message` | `async function message(message: string, options?: string \| MessageDialogOptions): Promise<void>` | Shows a message dialog with an `Ok` button. |
 | `ask` | `async function ask(message: string, options?: string \| ConfirmDialogOptions): Promise<boolean>` | Shows a question dialog with `Yes` and `No` buttons. |
 | `confirm` | `async function confirm(message: string, options?: string \| ConfirmDialogOptions): Promise<boolean>` | Shows a question dialog with `Ok` and `Cancel` buttons. |
+
+**⚠️ Returns null:** `save()` - always check if user cancelled
 
 ### FS
 
@@ -51,6 +55,9 @@
 | `watch` | `async function watch(paths: string \| string[] \| URL \| URL[], cb: (event: WatchEvent) => void, options?: DebouncedWatchOptions): Promise<UnwatchFn>` | Watch changes (after a delay) on files or directories. |
 | `watchImmediate` | `async function watchImmediate(paths: string \| string[] \| URL \| URL[], cb: (event: WatchEvent) => void, options?: WatchOptions): Promise<UnwatchFn>` | Watch changes on files or directories. |
 | `size` | `async function size(path: string \| URL): Promise<number>` | Get the size of a file or directory. |
+
+**Types:** `DirEntry = {name: string, isDirectory: boolean, isFile: boolean, isSymlink: boolean}`
+**Types:** `FileInfo = {size: number, isDirectory: boolean, isFile: boolean, isSymlink: boolean, ...}`
 
 ### Global Shortcut
 
@@ -109,6 +116,8 @@
 | `locale` | `async function locale(): Promise<string \| null>` | Returns a String with a `BCP-47` language tag inside. |
 | `hostname` | `async function hostname(): Promise<string \| null>` | Returns the host name of the operating system. |
 
+**⚠️ Returns null:** `locale()`, `hostname()` - may be null on some platforms
+
 ### Process
 
 **Access:** `window.__TAURI__.process`
@@ -117,6 +126,130 @@
 | --- | --- | --- |
 | `exit` | `async function exit(code = 0): Promise<void>` | Exits immediately with the given `exitCode`. |
 | `relaunch` | `async function relaunch(): Promise<void>` | Exits the current instance of the app then relaunches it. |
+
+### Shell
+
+**Access:** `window.__TAURI__.shell`
+
+| Function | Signature | Description |
+| --- | --- | --- |
+| `execute` | `async function execute(program: string, args?: string[], options?: SpawnOptions): Promise<ChildProcess>` | Execute a system command. |
+| `open` | `async function open(path: string): Promise<void>` | Open path with the system's default application. |
+
+### Store
+
+**Access:** `window.__TAURI__.store`
+
+| Function | Signature | Description |
+| --- | --- | --- |
+| `createStore` | `async function createStore(fileName: string): Promise<Store>` | Creates a new store. |
+| `get` | `async function get<T>(key: string): Promise<T \| null>` | Get a value from the store. |
+| `set` | `async function set(key: string, value: any): Promise<void>` | Set a value in the store. |
+| `delete` | `async function delete(key: string): Promise<boolean>` | Delete a key from the store. |
+
+**⚠️ Returns null:** `get()` - always check if key exists
+
+### SQL
+
+**Access:** `window.__TAURI__.sql`
+
+| Function | Signature | Description |
+| --- | --- | --- |
+| `load` | `async function load(db: string): Promise<Database>` | Load a database connection. |
+| `execute` | `async function execute(query: string, bindValues?: unknown[]): Promise<QueryResult>` | Execute a non-query SQL statement. |
+| `select` | `async function select<T>(query: string, bindValues?: unknown[]): Promise<T[]>` | Execute a query SQL statement. |
+
+### Autostart
+
+**Access:** `window.__TAURI__.autostart`
+
+| Function | Signature | Description |
+| --- | --- | --- |
+| `enable` | `async function enable(): Promise<void>` | Enable autostart for the application. |
+| `disable` | `async function disable(): Promise<void>` | Disable autostart for the application. |
+| `isEnabled` | `async function isEnabled(): Promise<boolean>` | Check if autostart is enabled. |
+
+### CLI
+
+**Access:** `window.__TAURI__.cli`
+
+| Function | Signature | Description |
+| --- | --- | --- |
+| `getMatches` | `async function getMatches(): Promise<ArgMatches>` | Get the command line arguments. |
+
+### Deep Link
+
+**Access:** `window.__TAURI__.deepLink`
+
+| Function | Signature | Description |
+| --- | --- | --- |
+| `register` | `async function register(protocol: string): Promise<void>` | Register a custom URL protocol. |
+| `onOpenUrl` | `async function onOpenUrl(handler: (urls: string[]) => void): Promise<UnlistenFn>` | Listen for deep link events. |
+
+### Log
+
+**Access:** `window.__TAURI__.log`
+
+| Function | Signature | Description |
+| --- | --- | --- |
+| `trace` | `function trace(message: string): void` | Log a trace message. |
+| `debug` | `function debug(message: string): void` | Log a debug message. |
+| `info` | `function info(message: string): void` | Log an info message. |
+| `warn` | `function warn(message: string): void` | Log a warning message. |
+| `error` | `function error(message: string): void` | Log an error message. |
+
+### Positioner
+
+**Access:** `window.__TAURI__.positioner`
+
+| Function | Signature | Description |
+| --- | --- | --- |
+| `moveWindow` | `async function moveWindow(position: Position): Promise<void>` | Move window to a specific position. |
+
+### Single Instance
+
+**Access:** `window.__TAURI__.singleInstance`
+
+| Function | Signature | Description |
+| --- | --- | --- |
+| `onSecondInstance` | `async function onSecondInstance(handler: (args: string[]) => void): Promise<UnlistenFn>` | Listen for second instance attempts. |
+
+### Stronghold
+
+**Access:** `window.__TAURI__.stronghold`
+
+| Function | Signature | Description |
+| --- | --- | --- |
+| `initialize` | `async function initialize(password: string, path?: string): Promise<void>` | Initialize the stronghold vault. |
+| `save` | `async function save(key: string, value: string): Promise<void>` | Save encrypted data. |
+| `load` | `async function load(key: string): Promise<string \| null>` | Load encrypted data. |
+
+**⚠️ Returns null:** `load()` - always check if key exists
+
+### Upload
+
+**Access:** `window.__TAURI__.upload`
+
+| Function | Signature | Description |
+| --- | --- | --- |
+| `upload` | `async function upload(url: string, filePath: string, options?: UploadOptions): Promise<UploadResponse>` | Upload a file to a server. |
+
+### Websocket
+
+**Access:** `window.__TAURI__.websocket`
+
+| Function | Signature | Description |
+| --- | --- | --- |
+| `connect` | `async function connect(url: string): Promise<WebSocket>` | Connect to a WebSocket server. |
+
+### Window State
+
+**Access:** `window.__TAURI__.windowState`
+
+| Function | Signature | Description |
+| --- | --- | --- |
+| `saveWindowState` | `async function saveWindowState(label?: string): Promise<void>` | Save the current window state. |
+| `restoreStateCurrent` | `async function restoreStateCurrent(): Promise<void>` | Restore the window state for current window. |
 
 ### Updater
 
@@ -130,6 +263,23 @@
 
 ## Platform-Specific APIs
 
+### Barcode Scanner
+
+**Mobile Only**
+
+| Function | Signature | Description |
+| --- | --- | --- |
+| `scan` | `async function scan(options?: ScanOptions): Promise<ScanResult>` | Scan a barcode or QR code. |
+
+### Biometric
+
+**Mobile/Desktop with biometric hardware**
+
+| Function | Signature | Description |
+| --- | --- | --- |
+| `isAvailable` | `async function isAvailable(): Promise<boolean>` | Check if biometric authentication is available. |
+| `authenticate` | `async function authenticate(reason: string): Promise<BiometricAuthResult>` | Authenticate using biometric. |
+
 ### Clipboard
 
 **Windows, macOS, Linux Only**
@@ -139,3 +289,45 @@
 | `writeImage` | `async function writeImage(image: string \| Image \| Uint8Array \| ArrayBuffer \| number[]): Promise<void>` | Writes image buffer to the clipboard. |
 | `readImage` | `async function readImage(): Promise<Image>` | Gets the clipboard content as Uint8Array image. |
 | `writeHtml` | `async function writeHtml(html: string, altText?: string): Promise<void>` | Writes HTML or fallbacks to write provided plain text to the clipboard. |
+
+### Clipboard Manager
+
+**Extended clipboard functionality**
+
+| Function | Signature | Description |
+| --- | --- | --- |
+| `startListening` | `async function startListening(): Promise<void>` | Start monitoring clipboard changes. |
+| `stopListening` | `async function stopListening(): Promise<void>` | Stop monitoring clipboard changes. |
+| `getHistory` | `async function getHistory(): Promise<ClipboardItem[]>` | Get clipboard history. |
+
+### Geolocation
+
+**Mobile/Desktop with location services**
+
+| Function | Signature | Description |
+| --- | --- | --- |
+| `getCurrentPosition` | `async function getCurrentPosition(options?: PositionOptions): Promise<Position \| null>` | Get current geographic position. |
+| `watchPosition` | `async function watchPosition(options?: PositionOptions): Promise<number>` | Watch position changes. |
+| `clearWatch` | `async function clearWatch(watchId: number): Promise<void>` | Stop watching position. |
+
+**⚠️ Returns null:** `getCurrentPosition()` - may be null if location unavailable
+
+### Haptics
+
+**Mobile Only**
+
+| Function | Signature | Description |
+| --- | --- | --- |
+| `impact` | `async function impact(style: ImpactStyle): Promise<void>` | Provide haptic feedback. |
+| `vibrate` | `async function vibrate(pattern: number \| number[]): Promise<void>` | Vibrate device. |
+
+### NFC
+
+**Mobile with NFC hardware**
+
+| Function | Signature | Description |
+| --- | --- | --- |
+| `isAvailable` | `async function isAvailable(): Promise<boolean>` | Check if NFC is available. |
+| `scan` | `async function scan(): Promise<NfcTag \| null>` | Scan for NFC tags. |
+
+**⚠️ Returns null:** `scan()` - may be null if no tag found

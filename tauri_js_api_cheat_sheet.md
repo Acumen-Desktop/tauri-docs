@@ -2,7 +2,17 @@
 
 **Note:** This cheat sheet is designed for use without a build step. All APIs are accessed through the `window.__TAURI__` object.
 
+**⚠️ APIs require permissions in `tauri.conf.json` capabilities array**
+
 ## Cross-Platform APIs
+
+### Core
+
+**Access:** `window.__TAURI__.core`
+
+| Function | Signature | Description |
+| --- | --- | --- |
+| `invoke` | `async function invoke<T>(cmd: string, args?: object): Promise<T>` | Call Rust backend commands |
 
 ### App
 
@@ -27,6 +37,8 @@
 *   `static getCurrent(): Window`: Get an instance of `Window` for the current window.
 *   `static async getAll(): Promise<Window[]>`: Gets a list of instances of `Window` for all available windows.
 *   `static async getFocusedWindow(): Promise<Window \| null>`: Gets the focused window.
+
+**⚠️ Returns null:** `getByLabel()`, `getFocusedWindow()` - always check before using
 
 **Instance Methods:**
 
@@ -85,6 +97,9 @@
 | `startResizeDragging` | `async function startResizeDragging(direction: ResizeDirection): Promise<void>` | Starts resize-dragging the window. |
 | `setProgressBar` | `async function setProgressBar(state: ProgressBarState): Promise<void>` | Sets the taskbar progress state. |
 | `setTheme` | `async function setTheme(theme?: Theme \| null): Promise<void>` | Set window theme. |
+
+**Size types:** `LogicalSize = {width, height}` or `PhysicalSize = {width, height, type: 'Physical'}`
+**Position types:** `LogicalPosition = {x, y}` or `PhysicalPosition = {x, y, type: 'Physical'}`
 
 ### Event
 
@@ -180,6 +195,8 @@
 *   `static async getAll(): Promise<Webview[]>`: Gets a list of instances of `Webview` for all available webviews.
 *   `static async getByLabel(label: string): Promise<Webview \| null>`: Gets the Webview for the webview associated with the given label.
 
+**⚠️ Returns null:** `getByLabel()` - always check before using
+
 **Instance Methods:**
 
 | Method | Signature | Description |
@@ -204,9 +221,61 @@
 
 **Class:** `WebviewWindow`
 
+*   `constructor(label: string, options?: WindowOptions)`: Creates a new WebviewWindow
 *   `static getCurrent(): WebviewWindow`: Get an instance of `WebviewWindow` for the current webview window.
 *   `static async getAll(): Promise<WebviewWindow[]>`: Gets a list of instances of `WebviewWindow` for all available webview windows.
 *   `static async getByLabel(label: string): Promise<WebviewWindow \| null>`: Gets the WebviewWindow for the webview window associated with the given label.
+
+**⚠️ Returns null:** `getByLabel()` - always check before using
+
+**Instance Methods:**
+
+| Method | Signature | Description |
+| --- | --- | --- |
+| `setBackgroundColor` | `async setBackgroundColor(color: Color): Promise<void>` | Set the window and webview background color. |
+
+### Webview
+
+**Access:** `window.__TAURI__.webview`
+
+**Class:** `Webview`
+
+*   `static getCurrent(): Webview`: Get an instance of `Webview` for the current webview.
+*   `static async getAll(): Promise<Webview[]>`: Gets a list of instances of `Webview` for all available webviews.
+*   `static async getByLabel(label: string): Promise<Webview | null>`: Gets the Webview for the webview associated with the given label.
+
+**⚠️ Returns null:** `getByLabel()` - always check before using
+
+**Instance Methods:**
+
+| Method | Signature | Description |
+| --- | --- | --- |
+| `position` | `async position(): Promise<PhysicalPosition>` | The position of the top-left hand corner of the webview's client area relative to the top-left hand corner of the desktop. |
+| `size` | `async size(): Promise<PhysicalSize>` | The physical size of the webview's client area. |
+| `close` | `async close(): Promise<void>` | Closes the webview. |
+| `setSize` | `async setSize(size: LogicalSize | PhysicalSize | Size): Promise<void>` | Resizes the webview. |
+| `setPosition` | `async setPosition(position: LogicalPosition | PhysicalPosition | Position): Promise<void>` | Sets the webview position. |
+| `setFocus` | `async setFocus(): Promise<void>` | Bring the webview to front and focus. |
+| `setAutoResize` | `async setAutoResize(autoResize: boolean): Promise<void>` | Sets whether the webview should automatically grow and shrink its size and position when the parent window resizes. |
+| `hide` | `async hide(): Promise<void>` | Hide the webview. |
+| `show` | `async show(): Promise<void>` | Show the webview. |
+| `setZoom` | `async setZoom(scaleFactor: number): Promise<void>` | Set webview zoom level. |
+| `reparent` | `async reparent(window: Window | WebviewWindow | string): Promise<void>` | Moves this webview to the given label. |
+| `clearAllBrowsingData` | `async clearAllBrowsingData(): Promise<void>` | Clears all browsing data for this webview. |
+| `setBackgroundColor` | `async setBackgroundColor(color: Color | null): Promise<void>` | Specify the webview background color. |
+
+### WebviewWindow
+
+**Access:** `window.__TAURI__.webviewWindow`
+
+**Class:** `WebviewWindow`
+
+*   `constructor(label: string, options?: WindowOptions)`: Creates a new WebviewWindow
+*   `static getCurrent(): WebviewWindow`: Get an instance of `WebviewWindow` for the current webview window.
+*   `static async getAll(): Promise<WebviewWindow[]>`: Gets a list of instances of `WebviewWindow` for all available webview windows.
+*   `static async getByLabel(label: string): Promise<WebviewWindow | null>`: Gets the WebviewWindow for the webview window associated with the given label.
+
+**⚠️ Returns null:** `getByLabel()` - always check before using
 
 **Instance Methods:**
 
